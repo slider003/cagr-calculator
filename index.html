@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compound Growth Calculator</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:%2321808d;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2332b8c6;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='%231f2121'/%3E%3Cpath d='M 15 85 Q 20 82 30 75 Q 45 62 60 40 Q 70 22 85 12' stroke='url(%23grad)' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='85' cy='12' r='5' fill='%2332b8c6'/%3E%3Cpath d='M 78 10 L 85 4 L 92 10' stroke='%2332b8c6' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
     <style>
@@ -133,8 +134,9 @@
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Dark mode - via media query */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-gray-400-rgb: 119, 124, 124;
     --color-teal-300-rgb: 50, 184, 198;
     --color-gray-300-rgb: 167, 169, 169;
@@ -172,6 +174,46 @@
       inset 0 -1px 0 rgba(0, 0, 0, 0.15);
     --color-select-caret: rgba(var(--color-gray-200-rgb), 0.8);
   }
+}
+
+/* Dark mode - forced */
+:root[data-theme="dark"] {
+  --color-gray-400-rgb: 119, 124, 124;
+  --color-teal-300-rgb: 50, 184, 198;
+  --color-gray-300-rgb: 167, 169, 169;
+  --color-gray-200-rgb: 245, 245, 245;
+
+  --color-bg-1: rgba(29, 78, 216, 0.15);
+  --color-bg-2: rgba(180, 83, 9, 0.15);
+  --color-bg-3: rgba(21, 128, 61, 0.15);
+  --color-bg-4: rgba(185, 28, 28, 0.15);
+  --color-bg-5: rgba(107, 33, 168, 0.15);
+  --color-bg-6: rgba(194, 65, 12, 0.15);
+  --color-bg-7: rgba(190, 24, 93, 0.15);
+  --color-bg-8: rgba(8, 145, 178, 0.15);
+
+  --color-background: var(--color-charcoal-700);
+  --color-surface: var(--color-charcoal-800);
+  --color-text: var(--color-gray-200);
+  --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+  --color-primary: var(--color-teal-300);
+  --color-primary-hover: var(--color-teal-400);
+  --color-primary-active: var(--color-teal-800);
+  --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+  --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+  --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
+  --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+  --color-error: var(--color-red-400);
+  --color-success: var(--color-teal-300);
+  --color-warning: var(--color-orange-400);
+  --color-info: var(--color-gray-300);
+  --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
+  --color-btn-primary-text: var(--color-slate-900);
+  --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+  --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
+  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  --color-select-caret: rgba(var(--color-gray-200-rgb), 0.8);
 }
 
 @font-face {
@@ -481,22 +523,199 @@ tbody tr:hover {
     body {
         padding: var(--space-16);
     }
-    
+
     h1 {
         font-size: var(--font-size-3xl);
     }
-    
+
     .stat-value {
         font-size: var(--font-size-2xl);
     }
-    
+
     .chart-container {
         height: 350px;
         padding: var(--space-16);
     }
-    
+
     .controls-grid {
         grid-template-columns: 1fr;
+    }
+
+    header > div {
+        flex-direction: column !important;
+        gap: var(--space-16);
+    }
+
+    header button#themeToggle {
+        align-self: stretch;
+    }
+}
+
+/* Share Sheet Modal */
+.share-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.share-modal-overlay.visible {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.share-sheet {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    width: 100%;
+    max-width: 500px;
+    padding: var(--space-24);
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease-out;
+    margin-bottom: 0;
+}
+
+.share-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-20);
+}
+
+.share-sheet-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+}
+
+.share-sheet-close {
+    background: var(--color-secondary);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text);
+    font-size: var(--font-size-xl);
+    transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.share-sheet-close:hover {
+    background: var(--color-secondary-hover);
+}
+
+.share-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: var(--space-16);
+    margin-bottom: var(--space-24);
+}
+
+.share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-16);
+    background: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-standard);
+    text-decoration: none;
+}
+
+.share-option:hover {
+    background: var(--color-secondary-hover);
+    transform: translateY(-2px);
+}
+
+.share-option-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: var(--radius-base);
+}
+
+.share-option-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+}
+
+.share-link-container {
+    background: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--space-12);
+    display: flex;
+    gap: var(--space-8);
+    align-items: center;
+}
+
+.share-link-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-mono);
+    outline: none;
+}
+
+.share-link-copy {
+    background: var(--color-primary);
+    color: var(--color-btn-primary-text);
+    border: none;
+    padding: var(--space-8) var(--space-16);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+    white-space: nowrap;
+}
+
+.share-link-copy:hover {
+    background: var(--color-primary-hover);
+}
+
+.share-link-copy.copied {
+    background: var(--color-success);
+}
+
+@media (min-width: 769px) {
+    .share-modal-overlay.visible {
+        align-items: center;
+    }
+
+    .share-sheet {
+        border-radius: var(--radius-lg);
+        margin-bottom: 0;
     }
 }
     </style>
@@ -504,8 +723,15 @@ tbody tr:hover {
 <body>
     <div class="container">
         <header>
-            <h1>Compound Growth Calculator</h1>
-            <p class="subtitle">Visualize the power of compound annual growth over time</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-16);">
+                <div style="flex: 1;">
+                    <h1>Compound Growth Calculator</h1>
+                    <p class="subtitle">Visualize the power of compound annual growth over time</p>
+                </div>
+                <button id="themeToggle" class="toggle-button" style="background-color: var(--color-secondary); color: var(--color-text); min-width: 120px;" title="Toggle dark/light mode">
+                    <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+                </button>
+            </div>
         </header>
 
         <div class="stats-grid" id="statsGrid">
@@ -554,7 +780,7 @@ tbody tr:hover {
                 </div>
                 <div class="control-group">
                     <label>
-                        <span>Monthly Contribution</span>
+                        <span>Contribution Amount</span>
                         <span class="control-value" id="contributionValue">$0</span>
                     </label>
                     <input type="range" id="contributionSlider" min="0" max="100000" step="1000" value="0">
@@ -588,7 +814,7 @@ tbody tr:hover {
             <button class="toggle-button" id="toggleTable">Show Year-by-Year Table</button>
             <button class="toggle-button" id="exportCSV" style="background-color: var(--color-secondary); color: var(--color-text);">Export CSV</button>
             <button class="toggle-button" id="exportJSON" style="background-color: var(--color-secondary); color: var(--color-text);">Export JSON</button>
-            <button class="toggle-button" id="shareURL" style="background-color: var(--color-secondary); color: var(--color-text);">Share URL</button>
+            <button class="toggle-button" id="shareURL" style="background-color: var(--color-secondary); color: var(--color-text);">Share</button>
             <button class="toggle-button" id="toggleComparison" style="background-color: var(--color-secondary); color: var(--color-text);">Compare Scenarios</button>
             <button class="toggle-button" id="resetButton" style="background-color: var(--color-warning); color: var(--color-btn-primary-text);">Reset to Defaults</button>
         </div>
@@ -605,11 +831,23 @@ tbody tr:hover {
                 </div>
                 <div>
                     <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-12); color: var(--color-text);">Scenario B</h3>
-                    <div style="display: flex; flex-direction: column; gap: var(--space-12);">
-                        <input type="number" id="scenarioBPrincipal" placeholder="Initial Investment" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="15000000">
-                        <input type="number" id="scenarioBRate" placeholder="Growth Rate (%)" step="0.5" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="12">
-                        <input type="number" id="scenarioBYears" placeholder="Years" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="50">
-                        <input type="number" id="scenarioBContribution" placeholder="Monthly Contribution" step="1000" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="0">
+                    <div style="display: flex; flex-direction: column; gap: var(--space-16);">
+                        <div>
+                            <label style="display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); margin-bottom: var(--space-6);">Initial Investment ($)</label>
+                            <input type="number" id="scenarioBPrincipal" placeholder="15000000" style="width: 100%; padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-base);" value="15000000">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); margin-bottom: var(--space-6);">Growth Rate (%)</label>
+                            <input type="number" id="scenarioBRate" placeholder="12" step="0.5" style="width: 100%; padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-base);" value="12">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); margin-bottom: var(--space-6);">Time Period (Years)</label>
+                            <input type="number" id="scenarioBYears" placeholder="50" style="width: 100%; padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-base);" value="50">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); margin-bottom: var(--space-6);">Contribution Amount ($)</label>
+                            <input type="number" id="scenarioBContribution" placeholder="0" step="1000" style="width: 100%; padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-base);" value="0">
+                        </div>
                     </div>
                     <div class="stat-card" style="margin-top: var(--space-12);">
                         <div class="stat-label">Final Value</div>
@@ -644,6 +882,44 @@ tbody tr:hover {
         </div>
     </div>
 
+    <!-- Share Sheet Modal -->
+    <div class="share-modal-overlay" id="shareModal">
+        <div class="share-sheet">
+            <div class="share-sheet-header">
+                <h3 class="share-sheet-title">Share Your Results</h3>
+                <button class="share-sheet-close" id="closeShareModal">&times;</button>
+            </div>
+
+            <div class="share-options">
+                <a href="#" class="share-option" id="shareTwitter" target="_blank" rel="noopener">
+                    <div class="share-option-icon">𝕏</div>
+                    <div class="share-option-label">Twitter</div>
+                </a>
+                <a href="#" class="share-option" id="shareFacebook" target="_blank" rel="noopener">
+                    <div class="share-option-icon">f</div>
+                    <div class="share-option-label">Facebook</div>
+                </a>
+                <a href="#" class="share-option" id="shareLinkedIn" target="_blank" rel="noopener">
+                    <div class="share-option-icon">in</div>
+                    <div class="share-option-label">LinkedIn</div>
+                </a>
+                <a href="#" class="share-option" id="shareReddit" target="_blank" rel="noopener">
+                    <div class="share-option-icon">⬆</div>
+                    <div class="share-option-label">Reddit</div>
+                </a>
+                <a href="#" class="share-option" id="shareEmail">
+                    <div class="share-option-icon">✉</div>
+                    <div class="share-option-label">Email</div>
+                </a>
+            </div>
+
+            <div class="share-link-container">
+                <input type="text" class="share-link-input" id="shareLinkInput" readonly>
+                <button class="share-link-copy" id="copyShareLink">Copy</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Application state
         let state = {
@@ -656,6 +932,51 @@ tbody tr:hover {
 
         let chart = null;
         let comparisonChart = null;
+        let currentTheme = 'auto'; // 'light', 'dark', or 'auto'
+
+        // Theme management
+        function setTheme(theme) {
+            currentTheme = theme;
+            const root = document.documentElement;
+
+            if (theme === 'light') {
+                root.setAttribute('data-theme', 'light');
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            } else if (theme === 'dark') {
+                root.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '🌙';
+                document.getElementById('themeText').textContent = 'Dark Mode';
+            } else {
+                root.removeAttribute('data-theme');
+                document.getElementById('themeIcon').textContent = '🌗';
+                document.getElementById('themeText').textContent = 'Auto Mode';
+            }
+
+            localStorage.setItem('theme', theme);
+
+            // Recreate chart to apply new theme colors
+            if (chart) {
+                chart.destroy();
+                chart = null;
+                updateAll();
+            }
+        }
+
+        function cycleTheme() {
+            if (currentTheme === 'auto') {
+                setTheme('light');
+            } else if (currentTheme === 'light') {
+                setTheme('dark');
+            } else {
+                setTheme('auto');
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'auto';
+            setTheme(savedTheme);
+        }
 
         // Format currency
         function formatCurrency(value) {
@@ -1043,24 +1364,73 @@ tbody tr:hover {
             document.getElementById('frequencySelect').value = state.frequency;
         }
 
-        // Share current configuration
-        function shareURL() {
+        // Share Sheet Functions
+        function openShareSheet() {
             const url = window.location.href;
+            const data = calculateGrowth(state.principal, state.rate, state.years, state.contribution, state.frequency);
+            const endValue = data[data.length - 1].value;
+
+            const shareText = `I just calculated compound growth: ${formatCurrency(state.principal)} growing at ${formatPercent(state.rate * 100)} for ${state.years} years = ${formatCurrency(endValue)}! 📈`;
+
+            // Update share links
+            document.getElementById('shareLinkInput').value = url;
+
+            // Twitter
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
+            document.getElementById('shareTwitter').href = twitterUrl;
+
+            // Facebook
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            document.getElementById('shareFacebook').href = facebookUrl;
+
+            // LinkedIn
+            const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+            document.getElementById('shareLinkedIn').href = linkedInUrl;
+
+            // Reddit
+            const redditUrl = `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(shareText)}`;
+            document.getElementById('shareReddit').href = redditUrl;
+
+            // Email
+            const emailSubject = 'Check out this Compound Growth Calculator';
+            const emailBody = `${shareText}\n\nTry it yourself: ${url}`;
+            const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+            document.getElementById('shareEmail').href = emailUrl;
+
+            // Show modal
+            document.getElementById('shareModal').classList.add('visible');
+        }
+
+        function closeShareSheet() {
+            document.getElementById('shareModal').classList.remove('visible');
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('shareLinkInput');
+            const btn = document.getElementById('copyShareLink');
+
+            input.select();
+            input.setSelectionRange(0, 99999); // For mobile devices
+
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(url).then(() => {
-                    const btn = document.getElementById('shareURL');
+                navigator.clipboard.writeText(input.value).then(() => {
                     const originalText = btn.textContent;
-                    btn.textContent = 'URL Copied!';
-                    btn.style.backgroundColor = 'var(--color-success)';
-                    btn.style.color = 'var(--color-btn-primary-text)';
+                    btn.textContent = 'Copied!';
+                    btn.classList.add('copied');
                     setTimeout(() => {
                         btn.textContent = originalText;
-                        btn.style.backgroundColor = 'var(--color-secondary)';
-                        btn.style.color = 'var(--color-text)';
+                        btn.classList.remove('copied');
                     }, 2000);
                 });
             } else {
-                alert('URL: ' + url);
+                document.execCommand('copy');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
             }
         }
 
@@ -1160,7 +1530,16 @@ tbody tr:hover {
         // Export buttons
         document.getElementById('exportCSV').addEventListener('click', exportToCSV);
         document.getElementById('exportJSON').addEventListener('click', exportToJSON);
-        document.getElementById('shareURL').addEventListener('click', shareURL);
+        document.getElementById('shareURL').addEventListener('click', openShareSheet);
+
+        // Share sheet event listeners
+        document.getElementById('closeShareModal').addEventListener('click', closeShareSheet);
+        document.getElementById('copyShareLink').addEventListener('click', copyShareLink);
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeShareSheet();
+            }
+        });
 
         // Reset button
         document.getElementById('resetButton').addEventListener('click', function() {
@@ -1185,6 +1564,9 @@ tbody tr:hover {
             updateAll();
         });
 
+        // Theme toggle button
+        document.getElementById('themeToggle').addEventListener('click', cycleTheme);
+
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             // Ctrl/Cmd + E: Export CSV
@@ -1192,10 +1574,10 @@ tbody tr:hover {
                 e.preventDefault();
                 exportToCSV();
             }
-            // Ctrl/Cmd + S: Share URL
+            // Ctrl/Cmd + S: Share
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
-                shareURL();
+                openShareSheet();
             }
             // Ctrl/Cmd + T: Toggle table
             if ((e.ctrlKey || e.metaKey) && e.key === 't') {
@@ -1212,6 +1594,18 @@ tbody tr:hover {
                 e.preventDefault();
                 document.getElementById('toggleComparison').click();
             }
+            // Ctrl/Cmd + M: Toggle theme mode
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                cycleTheme();
+            }
+            // ESC: Close share modal
+            if (e.key === 'Escape') {
+                const shareModal = document.getElementById('shareModal');
+                if (shareModal.classList.contains('visible')) {
+                    closeShareSheet();
+                }
+            }
         });
 
         // Add keyboard shortcut helper tooltip
@@ -1220,9 +1614,10 @@ tbody tr:hover {
             <div style="position: fixed; bottom: var(--space-16); right: var(--space-16); background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-base); padding: var(--space-12); font-size: var(--font-size-xs); color: var(--color-text-secondary); max-width: 250px; box-shadow: var(--shadow-md); z-index: 1000; opacity: 0; transition: opacity 0.3s;">
                 <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-8); color: var(--color-text);">Keyboard Shortcuts</div>
                 <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+E</kbd> Export CSV</div>
-                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+S</kbd> Share URL</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+S</kbd> Share</div>
                 <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+T</kbd> Toggle Table</div>
                 <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+C</kbd> Comparison</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+M</kbd> Theme Mode</div>
                 <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+R</kbd> Reset</div>
                 <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">?</kbd> Show shortcuts</div>
             </div>
@@ -1245,6 +1640,7 @@ tbody tr:hover {
         });
 
         // Initialize on page load
+        loadTheme();
         loadFromURL();
         updateAll();
     </script>
