@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compound Growth Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
     <style>
         :root {
   /* Primitive Color Tokens */
@@ -243,6 +244,17 @@ h1 {
     font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
+    transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.stat-value.pulse {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .stat-subvalue {
@@ -540,6 +552,24 @@ tbody tr:hover {
                     </label>
                     <input type="range" id="yearsSlider" min="10" max="100" step="1" value="50">
                 </div>
+                <div class="control-group">
+                    <label>
+                        <span>Monthly Contribution</span>
+                        <span class="control-value" id="contributionValue">$0</span>
+                    </label>
+                    <input type="range" id="contributionSlider" min="0" max="100000" step="1000" value="0">
+                </div>
+                <div class="control-group">
+                    <label>
+                        <span>Contribution Frequency</span>
+                        <span class="control-value" id="frequencyValue">Monthly</span>
+                    </label>
+                    <select id="frequencySelect" style="width: 100%; padding: var(--space-8); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-base); cursor: pointer;">
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="annually">Annually</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -554,7 +584,49 @@ tbody tr:hover {
             </div>
         </div>
 
-        <button class="toggle-button" id="toggleTable">Show Year-by-Year Table</button>
+        <div style="display: flex; gap: var(--space-12); flex-wrap: wrap; margin-bottom: var(--space-16);">
+            <button class="toggle-button" id="toggleTable">Show Year-by-Year Table</button>
+            <button class="toggle-button" id="exportCSV" style="background-color: var(--color-secondary); color: var(--color-text);">Export CSV</button>
+            <button class="toggle-button" id="exportJSON" style="background-color: var(--color-secondary); color: var(--color-text);">Export JSON</button>
+            <button class="toggle-button" id="shareURL" style="background-color: var(--color-secondary); color: var(--color-text);">Share URL</button>
+            <button class="toggle-button" id="toggleComparison" style="background-color: var(--color-secondary); color: var(--color-text);">Compare Scenarios</button>
+            <button class="toggle-button" id="resetButton" style="background-color: var(--color-warning); color: var(--color-btn-primary-text);">Reset to Defaults</button>
+        </div>
+
+        <div class="table-container" id="comparisonContainer" style="margin-bottom: var(--space-32);">
+            <h2 class="controls-title">Scenario Comparison</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-20);">
+                <div>
+                    <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-12); color: var(--color-text);">Scenario A (Current)</h3>
+                    <div class="stat-card">
+                        <div class="stat-label">Final Value</div>
+                        <div class="stat-value" id="scenarioAValue">$0</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-12); color: var(--color-text);">Scenario B</h3>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-12);">
+                        <input type="number" id="scenarioBPrincipal" placeholder="Initial Investment" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="15000000">
+                        <input type="number" id="scenarioBRate" placeholder="Growth Rate (%)" step="0.5" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="12">
+                        <input type="number" id="scenarioBYears" placeholder="Years" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="50">
+                        <input type="number" id="scenarioBContribution" placeholder="Monthly Contribution" step="1000" style="padding: var(--space-10); border-radius: var(--radius-base); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-family: var(--font-family-base);" value="0">
+                    </div>
+                    <div class="stat-card" style="margin-top: var(--space-12);">
+                        <div class="stat-label">Final Value</div>
+                        <div class="stat-value" id="scenarioBValue">$0</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-12); color: var(--color-text);">Difference</h3>
+                    <div class="stat-card">
+                        <div class="stat-label">Value Difference</div>
+                        <div class="stat-value" id="scenarioDiff">$0</div>
+                        <div class="stat-subvalue" id="scenarioDiffPercent">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="table-container" id="tableContainer">
             <div class="table-wrapper">
                 <table>
@@ -577,10 +649,13 @@ tbody tr:hover {
         let state = {
             principal: 10000000,
             rate: 0.10,
-            years: 50
+            years: 50,
+            contribution: 0,
+            frequency: 'monthly'
         };
 
         let chart = null;
+        let comparisonChart = null;
 
         // Format currency
         function formatCurrency(value) {
@@ -592,11 +667,34 @@ tbody tr:hover {
             return value.toFixed(1) + '%';
         }
 
-        // Calculate compound growth
-        function calculateGrowth(principal, rate, years) {
+        // Calculate compound growth with contributions
+        function calculateGrowth(principal, rate, years, contribution = 0, frequency = 'monthly') {
             const data = [];
+            let periodsPerYear = frequency === 'monthly' ? 12 : frequency === 'quarterly' ? 4 : 1;
+
             for (let year = 0; year <= years; year++) {
-                const value = principal * Math.pow(1 + rate, year);
+                let value;
+                if (contribution === 0) {
+                    // Simple compound interest
+                    value = principal * Math.pow(1 + rate, year);
+                } else {
+                    // Compound interest with regular contributions
+                    // FV = PV(1+r)^t + PMT * [((1+r)^t - 1) / r]
+                    // Where PMT is adjusted for the compounding periods
+                    const ratePerPeriod = rate / periodsPerYear;
+                    const totalPeriods = year * periodsPerYear;
+
+                    const principalGrowth = principal * Math.pow(1 + rate, year);
+
+                    if (totalPeriods === 0) {
+                        value = principal;
+                    } else {
+                        // Future value of annuity (contributions)
+                        const contributionGrowth = contribution * periodsPerYear *
+                            ((Math.pow(1 + rate, year) - 1) / rate);
+                        value = principalGrowth + contributionGrowth;
+                    }
+                }
                 data.push({ year, value });
             }
             return data;
@@ -608,6 +706,17 @@ tbody tr:hover {
             const endValue = data[data.length - 1].value;
             const totalGrowth = endValue - startValue;
             const growthPercent = (totalGrowth / startValue) * 100;
+
+            const statElements = [
+                document.getElementById('startValue'),
+                document.getElementById('endValue'),
+                document.getElementById('totalGrowth')
+            ];
+
+            statElements.forEach(el => {
+                el.classList.add('pulse');
+                setTimeout(() => el.classList.remove('pulse'), 300);
+            });
 
             document.getElementById('startValue').textContent = formatCurrency(startValue);
             document.getElementById('endValue').textContent = formatCurrency(endValue);
@@ -645,24 +754,93 @@ tbody tr:hover {
             });
         }
 
+        // Calculate milestones
+        function calculateMilestones(data) {
+            const finalValue = data[data.length - 1].value;
+            const milestones = [];
+            const roundValues = [1000000, 5000000, 10000000, 25000000, 50000000, 100000000, 250000000, 500000000, 1000000000];
+
+            roundValues.forEach(targetValue => {
+                if (targetValue < finalValue) {
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i].value >= targetValue) {
+                            milestones.push({
+                                year: data[i].year,
+                                value: targetValue,
+                                label: formatCurrency(targetValue)
+                            });
+                            break;
+                        }
+                    }
+                }
+            });
+
+            return milestones.slice(0, 5); // Limit to 5 milestones
+        }
+
         // Update chart
         function updateChart(data) {
             const labels = data.map(d => d.year);
             const values = data.map(d => d.value);
+            const milestones = calculateMilestones(data);
 
             if (chart) {
                 chart.data.labels = labels;
                 chart.data.datasets[0].data = values;
+
+                // Update milestone annotations
+                if (chart.options.plugins.annotation) {
+                    chart.options.plugins.annotation.annotations = {};
+                    milestones.forEach((milestone, idx) => {
+                        chart.options.plugins.annotation.annotations['line' + idx] = {
+                            type: 'line',
+                            yMin: milestone.value,
+                            yMax: milestone.value,
+                            borderColor: 'rgba(255, 99, 132, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            label: {
+                                display: true,
+                                content: milestone.label + ' (Year ' + milestone.year + ')',
+                                position: 'end',
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                                color: 'white',
+                                font: { size: 10, weight: 'bold' }
+                            }
+                        };
+                    });
+                }
+
                 chart.update('none');
             } else {
                 const ctx = document.getElementById('growthChart').getContext('2d');
-                
+
                 // Get computed styles for theming
                 const computedStyle = getComputedStyle(document.documentElement);
                 const primaryColor = computedStyle.getPropertyValue('--color-primary').trim();
                 const textColor = computedStyle.getPropertyValue('--color-text').trim();
                 const gridColor = computedStyle.getPropertyValue('--color-border').trim();
-                
+
+                const annotations = {};
+                milestones.forEach((milestone, idx) => {
+                    annotations['line' + idx] = {
+                        type: 'line',
+                        yMin: milestone.value,
+                        yMax: milestone.value,
+                        borderColor: 'rgba(255, 99, 132, 0.5)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        label: {
+                            display: true,
+                            content: milestone.label + ' (Year ' + milestone.year + ')',
+                            position: 'end',
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            color: 'white',
+                            font: { size: 10, weight: 'bold' }
+                        }
+                    };
+                });
+
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -685,6 +863,17 @@ tbody tr:hover {
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuart',
+                            onProgress: function(animation) {
+                                const chart = animation.chart;
+                                const ctx = chart.ctx;
+                                ctx.save();
+                                ctx.globalAlpha = animation.currentStep / animation.numSteps;
+                                ctx.restore();
+                            }
+                        },
                         interaction: {
                             mode: 'index',
                             intersect: false
@@ -711,6 +900,9 @@ tbody tr:hover {
                                         return 'Value: ' + formatCurrency(context.parsed.y);
                                     }
                                 }
+                            },
+                            annotation: {
+                                annotations: annotations
                             }
                         },
                         scales: {
@@ -768,10 +960,135 @@ tbody tr:hover {
 
         // Update all visualizations
         function updateAll() {
-            const data = calculateGrowth(state.principal, state.rate, state.years);
+            const data = calculateGrowth(state.principal, state.rate, state.years, state.contribution, state.frequency);
             updateStats(data);
             updateChart(data);
             updateTable(data);
+            updateURL();
+            updateComparison();
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const data = calculateGrowth(state.principal, state.rate, state.years, state.contribution, state.frequency);
+            let csv = 'Year,Value,Growth\n';
+            data.forEach((item, index) => {
+                const growth = index > 0 ? item.value - data[index - 1].value : 0;
+                csv += `${item.year},${item.value.toFixed(2)},${growth.toFixed(2)}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'growth-data.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Export to JSON
+        function exportToJSON() {
+            const data = calculateGrowth(state.principal, state.rate, state.years, state.contribution, state.frequency);
+            const exportData = {
+                parameters: {
+                    principal: state.principal,
+                    rate: state.rate,
+                    years: state.years,
+                    contribution: state.contribution,
+                    frequency: state.frequency
+                },
+                results: data
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'growth-data.json';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Update URL with current state
+        function updateURL() {
+            const params = new URLSearchParams({
+                p: state.principal,
+                r: (state.rate * 100).toFixed(1),
+                y: state.years,
+                c: state.contribution,
+                f: state.frequency
+            });
+            const newURL = window.location.pathname + '?' + params.toString();
+            window.history.replaceState({}, '', newURL);
+        }
+
+        // Load state from URL
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('p')) state.principal = parseInt(params.get('p'));
+            if (params.has('r')) state.rate = parseFloat(params.get('r')) / 100;
+            if (params.has('y')) state.years = parseInt(params.get('y'));
+            if (params.has('c')) state.contribution = parseInt(params.get('c'));
+            if (params.has('f')) state.frequency = params.get('f');
+
+            // Update UI controls
+            document.getElementById('principalSlider').value = state.principal;
+            document.getElementById('principalValue').textContent = formatCurrency(state.principal);
+            document.getElementById('rateSlider').value = state.rate * 100;
+            document.getElementById('rateValue').textContent = formatPercent(state.rate * 100);
+            document.getElementById('yearsSlider').value = state.years;
+            document.getElementById('yearsValue').textContent = state.years;
+            document.getElementById('contributionSlider').value = state.contribution;
+            document.getElementById('contributionValue').textContent = formatCurrency(state.contribution);
+            document.getElementById('frequencySelect').value = state.frequency;
+        }
+
+        // Share current configuration
+        function shareURL() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = document.getElementById('shareURL');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'URL Copied!';
+                    btn.style.backgroundColor = 'var(--color-success)';
+                    btn.style.color = 'var(--color-btn-primary-text)';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.backgroundColor = 'var(--color-secondary)';
+                        btn.style.color = 'var(--color-text)';
+                    }, 2000);
+                });
+            } else {
+                alert('URL: ' + url);
+            }
+        }
+
+        // Update comparison
+        function updateComparison() {
+            const dataA = calculateGrowth(state.principal, state.rate, state.years, state.contribution, state.frequency);
+            const valueA = dataA[dataA.length - 1].value;
+            document.getElementById('scenarioAValue').textContent = formatCurrency(valueA);
+
+            const principalB = parseInt(document.getElementById('scenarioBPrincipal').value) || 0;
+            const rateB = parseFloat(document.getElementById('scenarioBRate').value) / 100 || 0;
+            const yearsB = parseInt(document.getElementById('scenarioBYears').value) || 0;
+            const contributionB = parseInt(document.getElementById('scenarioBContribution').value) || 0;
+
+            if (principalB > 0 && rateB > 0 && yearsB > 0) {
+                const dataB = calculateGrowth(principalB, rateB, yearsB, contributionB, 'monthly');
+                const valueB = dataB[dataB.length - 1].value;
+                document.getElementById('scenarioBValue').textContent = formatCurrency(valueB);
+
+                const diff = valueB - valueA;
+                const diffPercent = (diff / valueA) * 100;
+                document.getElementById('scenarioDiff').textContent = formatCurrency(Math.abs(diff));
+                document.getElementById('scenarioDiffPercent').textContent =
+                    (diff >= 0 ? '+' : '-') + formatPercent(Math.abs(diffPercent));
+
+                const diffElement = document.getElementById('scenarioDiff');
+                diffElement.style.color = diff >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+            }
         }
 
         // Event listeners for controls
@@ -793,11 +1110,24 @@ tbody tr:hover {
             updateAll();
         });
 
+        document.getElementById('contributionSlider').addEventListener('input', function(e) {
+            state.contribution = parseInt(e.target.value);
+            document.getElementById('contributionValue').textContent = formatCurrency(state.contribution);
+            updateAll();
+        });
+
+        document.getElementById('frequencySelect').addEventListener('change', function(e) {
+            state.frequency = e.target.value;
+            const freqLabel = e.target.options[e.target.selectedIndex].text;
+            document.getElementById('frequencyValue').textContent = freqLabel;
+            updateAll();
+        });
+
         // Toggle table visibility
         document.getElementById('toggleTable').addEventListener('click', function() {
             const tableContainer = document.getElementById('tableContainer');
             const isVisible = tableContainer.classList.contains('visible');
-            
+
             if (isVisible) {
                 tableContainer.classList.remove('visible');
                 this.textContent = 'Show Year-by-Year Table';
@@ -807,7 +1137,115 @@ tbody tr:hover {
             }
         });
 
+        // Toggle comparison visibility
+        document.getElementById('toggleComparison').addEventListener('click', function() {
+            const comparisonContainer = document.getElementById('comparisonContainer');
+            const isVisible = comparisonContainer.classList.contains('visible');
+
+            if (isVisible) {
+                comparisonContainer.classList.remove('visible');
+                this.textContent = 'Compare Scenarios';
+            } else {
+                comparisonContainer.classList.add('visible');
+                this.textContent = 'Hide Comparison';
+                updateComparison();
+            }
+        });
+
+        // Comparison scenario inputs
+        ['scenarioBPrincipal', 'scenarioBRate', 'scenarioBYears', 'scenarioBContribution'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateComparison);
+        });
+
+        // Export buttons
+        document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+        document.getElementById('exportJSON').addEventListener('click', exportToJSON);
+        document.getElementById('shareURL').addEventListener('click', shareURL);
+
+        // Reset button
+        document.getElementById('resetButton').addEventListener('click', function() {
+            state = {
+                principal: 10000000,
+                rate: 0.10,
+                years: 50,
+                contribution: 0,
+                frequency: 'monthly'
+            };
+
+            document.getElementById('principalSlider').value = state.principal;
+            document.getElementById('principalValue').textContent = formatCurrency(state.principal);
+            document.getElementById('rateSlider').value = state.rate * 100;
+            document.getElementById('rateValue').textContent = formatPercent(state.rate * 100);
+            document.getElementById('yearsSlider').value = state.years;
+            document.getElementById('yearsValue').textContent = state.years;
+            document.getElementById('contributionSlider').value = state.contribution;
+            document.getElementById('contributionValue').textContent = formatCurrency(state.contribution);
+            document.getElementById('frequencySelect').value = state.frequency;
+
+            updateAll();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + E: Export CSV
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                exportToCSV();
+            }
+            // Ctrl/Cmd + S: Share URL
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                shareURL();
+            }
+            // Ctrl/Cmd + T: Toggle table
+            if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+                e.preventDefault();
+                document.getElementById('toggleTable').click();
+            }
+            // Ctrl/Cmd + R: Reset (override default)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                document.getElementById('resetButton').click();
+            }
+            // Ctrl/Cmd + C: Toggle comparison
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                e.preventDefault();
+                document.getElementById('toggleComparison').click();
+            }
+        });
+
+        // Add keyboard shortcut helper tooltip
+        const helpText = document.createElement('div');
+        helpText.innerHTML = `
+            <div style="position: fixed; bottom: var(--space-16); right: var(--space-16); background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-base); padding: var(--space-12); font-size: var(--font-size-xs); color: var(--color-text-secondary); max-width: 250px; box-shadow: var(--shadow-md); z-index: 1000; opacity: 0; transition: opacity 0.3s;">
+                <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-8); color: var(--color-text);">Keyboard Shortcuts</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+E</kbd> Export CSV</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+S</kbd> Share URL</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+T</kbd> Toggle Table</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+C</kbd> Comparison</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">Ctrl+R</kbd> Reset</div>
+                <div><kbd style="font-family: var(--font-family-mono); background: var(--color-secondary); padding: 2px 6px; border-radius: 3px;">?</kbd> Show shortcuts</div>
+            </div>
+        `;
+        document.body.appendChild(helpText);
+        const shortcutsPanel = helpText.firstElementChild;
+
+        // Show shortcuts with "?" key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+                if (shortcutsPanel.style.opacity === '0') {
+                    shortcutsPanel.style.opacity = '1';
+                    setTimeout(() => {
+                        shortcutsPanel.style.opacity = '0';
+                    }, 5000);
+                } else {
+                    shortcutsPanel.style.opacity = '0';
+                }
+            }
+        });
+
         // Initialize on page load
+        loadFromURL();
         updateAll();
     </script>
 </body>
